@@ -1,12 +1,13 @@
 {
   "name": "integration-to-google",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS=--openssl-legacy-provider next dev --turbopack --experimental-https",
+    "dev": "next dev --turbopack --experimental-https",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "ver": "bunx commit-and-tag-version -- --prerelease"
   },
   "dependencies": {
     "@mantine/core": "^7.17.5",
