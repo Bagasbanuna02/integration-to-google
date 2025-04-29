@@ -1,15 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
+import { Card, Grid, Image, Paper, SimpleGrid, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
-import {
-  Card,
-  Text,
-  Image,
-  Grid,
-  Container,
-  SimpleGrid,
-  Paper,
-} from "@mantine/core";
 import UploadedCard from "./_uploaded";
 
 interface Submission {
@@ -31,8 +23,6 @@ export default function SubmissionsPage() {
     };
     fetchData();
   }, []);
-
-  // console.log("data >", submissions)
 
   return (
     <SimpleGrid cols={2}>
