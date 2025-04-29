@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
+import { NextResponse } from "next/server";
 
 const GOOGLE_SHEET_ID = process.env.GOOGLE_SHEET_ID!;
 const GOOGLE_CLIENT_EMAIL = process.env.GOOGLE_CLIENT_EMAIL!;
@@ -9,7 +8,7 @@ const GOOGLE_PRIVATE_KEY = process.env.GOOGLE_PRIVATE_KEY!.replace(
   "\n"
 );
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const auth = new google.auth.JWT(
       GOOGLE_CLIENT_EMAIL,
@@ -22,16 +21,29 @@ export async function GET(req: NextRequest) {
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: GOOGLE_SHEET_ID,
-      range: "Sheet1!A2:D", // mulai dari baris kedua (skip header)
+      range: "Sheet1!A2:D",
     });
+
+    // console.log("data sheet >>", response.data.values);
 
     const rows = response.data.values || [];
 
-    return NextResponse.json(rows, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching data:", error);
+    // Map ke format frontend
+    const data = rows.map((row) => ({
+      name: row[0],
+      email: row[1],
+      message: row[2],
+      fileId: row[3],
+      imageUrl: row[3]
+        ? `https://drive.google.com/uc?export=view&id=${row[3]}`
+        : null,
+    }));
+
+    return NextResponse.json(data);
+  } catch (err) {
+    console.error("Fetch error:", err);
     return NextResponse.json(
-      { message: "Failed to fetch data" },
+      { error: "Failed to fetch data" },
       { status: 500 }
     );
   }
