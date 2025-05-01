@@ -1,4 +1,5 @@
 "use client";
+
 import { useForm } from "@mantine/form";
 import { TextInput, Textarea, Button, Box, FileInput } from "@mantine/core";
 import { useState } from "react";
@@ -9,44 +10,51 @@ export default function ContactForm() {
       name: "",
       email: "",
       message: "",
-      photo: null as File | null, // ➔ TAMBAHKAN photo
+      photo: null as File | null,
     },
     validate: {
-      name: (value: string) => (value.length < 2 ? "Name too short" : null),
+      name: (value: string) =>
+        value.trim().length < 2 ? "Name too short" : null,
       email: (value: string) =>
         /^\S+@\S+$/.test(value) ? null : "Invalid email",
       message: (value: string) =>
-        value.length < 5 ? "Message too short" : null,
+        value.trim().length < 5 ? "Message too short" : null,
     },
   });
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(""); // ✅ tampilkan pesan error
 
   const handleSubmit = async (values: typeof form.values) => {
     setLoading(true);
+    setSuccess(false);
+    setError("");
+
     try {
       const formData = new FormData();
       formData.append("name", values.name);
       formData.append("email", values.email);
       formData.append("message", values.message);
       if (values.photo) {
-        formData.append("photo", values.photo); // tambahkan photo
+        formData.append("photo", values.photo);
       }
 
       const res = await fetch("/api/submit-form", {
         method: "POST",
-        body: formData, // ➔ multipart/form-data otomatis
+        body: formData,
       });
 
       if (res.ok) {
         form.reset();
         setSuccess(true);
       } else {
-        console.error("Failed to submit");
+        const err = await res.json();
+        setError(err.message || "Failed to submit");
       }
-    } catch (error) {
-      console.error("Error submitting:", error);
+    } catch (err) {
+      console.error("Error submitting:", err);
+      setError("Terjadi kesalahan saat mengirim.");
     } finally {
       setLoading(false);
     }
@@ -70,6 +78,8 @@ export default function ContactForm() {
           mt="md"
           label="Message"
           placeholder="Your message"
+          autosize
+          minRows={3}
           {...form.getInputProps("message")}
         />
         <FileInput
@@ -77,6 +87,7 @@ export default function ContactForm() {
           label="Upload Photo"
           placeholder="Choose file"
           accept="image/*"
+          clearable
           {...form.getInputProps("photo")}
         />
 
@@ -86,9 +97,10 @@ export default function ContactForm() {
 
         {success && (
           <p style={{ color: "green", marginTop: 10 }}>
-            Thank you! Your message has been sent.
+            ✅ Thank you! Your message has been sent.
           </p>
         )}
+        {error && <p style={{ color: "red", marginTop: 10 }}>❌ {error}</p>}
       </form>
     </Box>
   );

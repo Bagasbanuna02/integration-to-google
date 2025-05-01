@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
-import { Card, Grid, Image, Paper, SimpleGrid, Text } from "@mantine/core";
+import { Image, Paper, Stack, Text, Button, Modal, Group } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useState } from "react";
-import UploadedCard from "./_uploaded";
+import Link from "next/link";
 
 interface Submission {
   name: string;
@@ -10,10 +10,14 @@ interface Submission {
   message: string;
   fileId: string;
   imageUrl: string | null;
+  rowIndex: number;
 }
 
 export default function SubmissionsPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Submission | null>(null);
+  const [opened, { open, close }] = useDisclosure(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,44 +28,81 @@ export default function SubmissionsPage() {
     fetchData();
   }, []);
 
-  return (
-    <SimpleGrid cols={2}>
-      <Paper withBorder p="lg">
-        <Grid>
-          {submissions.map((item, idx) => (
-            <Grid.Col key={idx} span={4}>
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
-                {item.imageUrl ? (
-                  <Image
-                    src={item.imageUrl}
-                    alt={item.name}
-                    height={200}
-                    width={200}
-                  />
-                ) : null}
-                <Text>{item.name}</Text>
-                <Text>{item.email}</Text>
-                <Text>{item.message}</Text>
-              </Card>
-            </Grid.Col>
-          ))}
-        </Grid>
-      </Paper>
+  const confirmDelete = (submission: Submission) => {
+    setDeleteTarget(submission);
+    open();
+  };
 
-      <Paper withBorder p="lg">
-        <Grid>
-          {submissions.map((item, idx) => (
-            <Grid.Col key={idx} span={4}>
-              <UploadedCard
-                name={item.name}
-                email={item.email}
-                fileId={item.fileId}
-                message={item.message}
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+
+    const res = await fetch("/api/delete-submission", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        rowIndex: deleteTarget.rowIndex,
+        fileId: deleteTarget.fileId, // Mengirim fileId untuk menghapus gambar
+      }),
+    });
+
+    setDeleting(false);
+    close();
+
+    if (res.ok) {
+      setSubmissions((prev) =>
+        prev.filter((s) => s.rowIndex !== deleteTarget.rowIndex)
+      );
+      setDeleteTarget(null);
+    } else {
+      alert("Gagal menghapus data dan gambar.");
+    }
+  };
+
+
+  return (
+    <>
+      <Stack>
+        {submissions.map((v, k) => (
+          <Paper withBorder key={k} p={"lg"}>
+            <Stack>
+              <Text>{v.name}</Text>
+              <Text>{v.email}</Text>
+              <Text>{v.message}</Text>
+
+              <Image
+                w={100}
+                h={100}
+                bg={"gray"}
+                p={"xs"}
+                src={`/api/drive-image?fileId=${v.fileId}`}
+                alt={`Gambar untuk ${v.name}`}
               />
-            </Grid.Col>
-          ))}
-        </Grid>
-      </Paper>
-    </SimpleGrid>
+
+              <Group mt="sm">
+                <Link href={`/edit-submission/${v.rowIndex}`} passHref>
+                  <Button>Edit</Button>
+                </Link>
+                <Button color="red" onClick={() => confirmDelete(v)}>
+                  Hapus
+                </Button>
+              </Group>
+            </Stack>
+          </Paper>
+        ))}
+      </Stack>
+
+      <Modal opened={opened} onClose={close} title="Konfirmasi Hapus" centered>
+        <Text>Apakah Anda yakin ingin menghapus data ini?</Text>
+        <Group mt="md" justify="flex-end">
+          <Button variant="default" onClick={close} disabled={deleting}>
+            Batal
+          </Button>
+          <Button color="red" onClick={handleDelete} loading={deleting}>
+            Hapus
+          </Button>
+        </Group>
+      </Modal>
+    </>
   );
 }

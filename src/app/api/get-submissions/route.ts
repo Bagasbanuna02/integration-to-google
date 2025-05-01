@@ -29,7 +29,7 @@ export async function GET() {
     const rows = response.data.values || [];
 
     // Map ke format frontend
-    const data = rows.map((row) => ({
+    const data = rows.map((row, idx) => ({
       name: row[0],
       email: row[1],
       message: row[2],
@@ -37,9 +37,13 @@ export async function GET() {
       imageUrl: row[3]
         ? `https://drive.google.com/uc?export=view&id=${row[3]}`
         : null,
+      rowIndex: idx + 2, // +2 karena dimulai dari baris 2 di sheet
     }));
 
-    return NextResponse.json(data);
+
+    const fixData = data.reverse();
+
+    return NextResponse.json(fixData);
   } catch (err) {
     console.error("Fetch error:", err);
     return NextResponse.json(
