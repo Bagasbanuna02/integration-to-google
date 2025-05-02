@@ -1,21 +1,16 @@
 "use client";
 
-import { Paper, SimpleGrid, Stack, Title } from "@mantine/core";
-import ContactForm from "./(dev)/create/page";
+import { Button, Paper, SimpleGrid, Stack } from "@mantine/core";
 import SubmissionsPage from "./(dev)/read/page";
+import { useRouter } from "next/navigation";
 
 export default function MainPage() {
+  const router = useRouter()
   return (
     <>
-      <Stack>
-        <Title order={3}>Test input</Title>
-        <SimpleGrid cols={2} spacing="md" p={"lg"}>
-          <Paper withBorder p="xl">
-            <ContactForm />
-          </Paper>
-          
-        </SimpleGrid>
-        <SimpleGrid cols={1} spacing="md" p={"lg"}>
+      <Stack p={"lg"}>
+        <Button w={100} onClick={() => router.push("/create")}>Tambah</Button>
+        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
           <Paper withBorder p="xl">
             <SubmissionsPage />
           </Paper>

@@ -1,5 +1,14 @@
 "use client";
-import { Image, Paper, Stack, Text, Button, Modal, Group } from "@mantine/core";
+import {
+  Image,
+  Paper,
+  Stack,
+  Text,
+  Button,
+  Modal,
+  Group,
+  Loader,
+} from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -59,7 +68,6 @@ export default function SubmissionsPage() {
     }
   };
 
-
   return (
     <>
       <Stack>
@@ -76,6 +84,9 @@ export default function SubmissionsPage() {
                 bg={"gray"}
                 p={"xs"}
                 src={`/api/drive-image?fileId=${v.fileId}`}
+                onLoad={() => {
+                  <Loader size={20} color="yellow" />;
+                }}
                 alt={`Gambar untuk ${v.name}`}
               />
 

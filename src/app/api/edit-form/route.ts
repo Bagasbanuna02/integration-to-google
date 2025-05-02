@@ -32,13 +32,17 @@ export async function POST(req: NextRequest) {
 
     let newFileId = oldFileId;
 
-    // Jika file baru di-upload, hapus yang lama dan upload yang baru
     if (file && file.name) {
       const buffer = Buffer.from(await file.arrayBuffer());
 
       // Hapus file lama jika ada
       if (oldFileId) {
-        await drive.files.delete({ fileId: oldFileId }).catch(() => {});
+        try {
+          console.log("Menghapus file lama dengan ID:", oldFileId);
+          await drive.files.delete({ fileId: oldFileId });
+        } catch (deleteErr) {
+          console.error("Gagal menghapus file lama:", deleteErr);
+        }
       }
 
       const uploadRes = await drive.files.create({
@@ -56,7 +60,7 @@ export async function POST(req: NextRequest) {
       newFileId = uploadRes.data.id!;
     }
 
-    // Update baris di Google Sheets
+    // Update data di Google Sheets
     const range = `Sheet1!A${rowIndex}:D${rowIndex}`;
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,

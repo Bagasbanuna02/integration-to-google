@@ -21,6 +21,8 @@ export async function POST(req: Request) {
       ]
     );
 
+    console.log("fileID", fileId);
+
     const sheets = google.sheets({ version: "v4", auth });
     const drive = google.drive({ version: "v3", auth });
 
