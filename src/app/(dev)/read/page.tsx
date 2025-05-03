@@ -1,8 +1,17 @@
 "use client";
-import { Image, Paper, Stack, Text, Button, Modal, Group } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import { useEffect, useState } from "react";
+import {
+  Button,
+  Group,
+  Image,
+  Loader,
+  Modal,
+  Paper,
+  Stack,
+  Text,
+} from "@mantine/core";
+import { useDisclosure, useShallowEffect } from "@mantine/hooks";
 import Link from "next/link";
+import { useState } from "react";
 
 interface Submission {
   name: string;
@@ -19,9 +28,9 @@ export default function SubmissionsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Submission | null>(null);
   const [opened, { open, close }] = useDisclosure(false);
 
-  useEffect(() => {
+  useShallowEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("/api/get-submissions");
+      const res = await fetch(`/api/get-submissions`);
       const data = await res.json();
       setSubmissions(data);
     };
@@ -59,7 +68,6 @@ export default function SubmissionsPage() {
     }
   };
 
-
   return (
     <>
       <Stack>
@@ -76,6 +84,9 @@ export default function SubmissionsPage() {
                 bg={"gray"}
                 p={"xs"}
                 src={`/api/drive-image?fileId=${v.fileId}`}
+                onLoad={() => {
+                  <Loader size={20} color="yellow" />;
+                }}
                 alt={`Gambar untuk ${v.name}`}
               />
 

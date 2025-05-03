@@ -24,8 +24,6 @@ export async function GET() {
       range: "Sheet1!A2:D",
     });
 
-    // console.log("data sheet >>", response.data.values);
-
     const rows = response.data.values || [];
 
     // Map ke format frontend

@@ -1,10 +1,18 @@
 "use client";
 
+import {
+  Button,
+  FileInput,
+  Paper,
+  TextInput,
+  Textarea
+} from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { TextInput, Textarea, Button, Box, FileInput } from "@mantine/core";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function ContactForm() {
+  const router = useRouter();
   const form = useForm({
     initialValues: {
       name: "",
@@ -47,6 +55,7 @@ export default function ContactForm() {
 
       if (res.ok) {
         form.reset();
+        router.back();
         setSuccess(true);
       } else {
         const err = await res.json();
@@ -61,7 +70,7 @@ export default function ContactForm() {
   };
 
   return (
-    <Box maw={400} mx="auto" mt="xl">
+    <Paper withBorder m={"auto"} mt={"md"} p={"xs"} w={300} pos="relative">
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <TextInput
           label="Name"
@@ -102,6 +111,6 @@ export default function ContactForm() {
         )}
         {error && <p style={{ color: "red", marginTop: 10 }}>❌ {error}</p>}
       </form>
-    </Box>
+    </Paper>
   );
 }

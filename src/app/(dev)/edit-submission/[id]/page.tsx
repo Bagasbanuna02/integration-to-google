@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import {
   Button,
@@ -6,7 +7,7 @@ import {
   Paper,
   Stack,
   TextInput,
-  Textarea
+  Textarea,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useShallowEffect } from "@mantine/hooks";
@@ -35,22 +36,28 @@ export default function EditSubmissionPage() {
       name: "",
       email: "",
       message: "",
+      oldFileId: "",
     },
   });
 
   useShallowEffect(() => {
+    console.log("front >>", rowIndex);
     const fetchData = async () => {
-      const res = await fetch("/api/get-submissions");
+      const res = await fetch(`/api/get-submissions/${params.id}`);
       const data = await res.json();
-      const item = data.find((d: Submission) => d.rowIndex === rowIndex);
-      if (item) {
+
+      if (data) {
         form.setValues({
-          name: item.name,
-          email: item.email,
-          message: item.message,
+          name: data.name,
+          email: data.email,
+          message: data.message,
+          oldFileId: data.fileId,
         });
+
+        setLoading(false);
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchData();
   }, [rowIndex]);
@@ -67,6 +74,7 @@ export default function EditSubmissionPage() {
     formData.append("rowIndex", rowIndex.toString());
     if (file) {
       formData.append("file", file);
+      formData.append("oldFileId", values.oldFileId);
     }
 
     const res = await fetch("/api/edit-form", {
@@ -88,10 +96,6 @@ export default function EditSubmissionPage() {
 
   return (
     <Paper withBorder m={"auto"} mt={"md"} p={"xs"} w={300} pos="relative">
-      {/* <LoadingOverlay
-        visible={submitting}
-        overlayProps={{ radius: "sm", blur: 2 }}
-      /> */}
       <form
         onSubmit={form.onSubmit((v) => handleSubmit(v))}
         encType="multipart/form-data"
@@ -105,7 +109,9 @@ export default function EditSubmissionPage() {
             onChange={setFile}
             accept="image/*"
           />
-          <Button loading={submitting} type="submit">Update</Button>
+          <Button loading={submitting} type="submit">
+            Update
+          </Button>
           {success && (
             <Notification
               color="green"
