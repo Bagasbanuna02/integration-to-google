@@ -14,13 +14,12 @@ export default function MainPage() {
       .then((res) => res.text())
       .then(setVersion);
   }, []);
-  
+
   return (
     <>
       <Stack p={"lg"}>
         <Group>
           <Text>Version: {version}</Text>
-
           <Button w={100} onClick={() => router.push("/create")}>
             Tambah
           </Button>
