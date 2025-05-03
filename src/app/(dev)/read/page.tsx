@@ -1,17 +1,17 @@
 "use client";
 import {
+  Button,
+  Group,
   Image,
+  Loader,
+  Modal,
   Paper,
   Stack,
   Text,
-  Button,
-  Modal,
-  Group,
-  Loader,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import { useEffect, useState } from "react";
+import { useDisclosure, useShallowEffect } from "@mantine/hooks";
 import Link from "next/link";
+import { useState } from "react";
 
 interface Submission {
   name: string;
@@ -28,9 +28,9 @@ export default function SubmissionsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Submission | null>(null);
   const [opened, { open, close }] = useDisclosure(false);
 
-  useEffect(() => {
+  useShallowEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("/api/get-submissions");
+      const res = await fetch(`/api/get-submissions`);
       const data = await res.json();
       setSubmissions(data);
     };
