@@ -14,8 +14,8 @@ export async function POST(req: NextRequest) {
   const email = formData.get("email") as string;
   const message = formData.get("message") as string;
   const rowIndex = formData.get("rowIndex") as string;
-  const oldFileId = formData.get("oldFileId") as string;
   const file = formData.get("file") as File | null;
+  const oldFileId = formData.get("oldFileId") as string;
 
   if (!rowIndex || !name || !email || !message) {
     return NextResponse.json({ message: "Missing fields" }, { status: 400 });
@@ -30,15 +30,19 @@ export async function POST(req: NextRequest) {
     const sheets = google.sheets({ version: "v4", auth });
     const drive = google.drive({ version: "v3", auth });
 
-    let newFileId = oldFileId;
+    let newFileId = "";
 
-    // Jika file baru di-upload, hapus yang lama dan upload yang baru
     if (file && file.name) {
       const buffer = Buffer.from(await file.arrayBuffer());
 
       // Hapus file lama jika ada
       if (oldFileId) {
-        await drive.files.delete({ fileId: oldFileId }).catch(() => {});
+        try {
+          console.log("Menghapus file lama dengan ID:", oldFileId);
+          await drive.files.delete({ fileId: oldFileId });
+        } catch (deleteErr) {
+          console.error("Gagal menghapus file lama:", deleteErr);
+        }
       }
 
       const uploadRes = await drive.files.create({
@@ -54,16 +58,27 @@ export async function POST(req: NextRequest) {
       });
 
       newFileId = uploadRes.data.id!;
+
+      // Update data di Google Sheets
+      const range = `Sheet1!A${rowIndex}:D${rowIndex}`;
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: SHEET_ID,
+        range,
+        valueInputOption: "USER_ENTERED",
+        requestBody: {
+          values: [[name, email, message, newFileId]],
+        },
+      });
     }
 
-    // Update baris di Google Sheets
-    const range = `Sheet1!A${rowIndex}:D${rowIndex}`;
+    // Update data di Google Sheets
+    const range = `Sheet1!A${rowIndex}:C${rowIndex}`;
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
       range,
       valueInputOption: "USER_ENTERED",
       requestBody: {
-        values: [[name, email, message, newFileId]],
+        values: [[name, email, message]],
       },
     });
 
